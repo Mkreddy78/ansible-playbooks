@@ -1,0 +1,52 @@
+---
+- name: Configure Tomcat on all servers
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Install Tomcat 10
+      apt:
+        name: tomcat10
+        state: present
+        update_cache: yes
+
+    - name: Install Tomcat 10 admin package
+      apt:
+        name: tomcat10-admin
+        state: present
+
+    - name: Copy customized tomcat-users.xml file
+      copy:
+        src: tomcat-users.xml
+        dest: /etc/tomcat10/tomcat-users.xml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Change Tomcat port from 8080 to 8989
+      replace:
+        path: /etc/tomcat10/server.xml
+        regexp: '8080'
+        replace: '8989'
+
+    - name: Restart Tomcat service
+      service:
+        name: tomcat10
+        state: restarted
+
+    - name: Pause for 20 seconds
+      pause:
+        seconds: 20
+
+    - name: Check Tomcat on server1
+      uri:
+        url: http://172.31.84.234:8989
+        status_code: 200
+      delegate_to: localhost
+
+    - name: Check Tomcat on server2
+      uri:
+        url: http://172.31.81.15:8989
+        status_code: 200
+      delegate_to: localhost
+
