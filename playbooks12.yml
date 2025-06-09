@@ -1,0 +1,16 @@
+---
+- name: Implementing hosts scope variables
+  hosts: webserver
+  become: true
+  vars:
+    a: firewalld
+    b: present
+    c: yes
+
+  tasks:
+    - name: Install firewalld
+      apt:
+        name: "{{ a }}"
+        state: "{{ b }}"
+        update_cache: "{{ c }}"
+...
