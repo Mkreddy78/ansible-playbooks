@@ -1,0 +1,45 @@
+---
+- name: Install Jenkins and required software
+  hosts: jenkinsserver
+  become: true
+  tasks:
+    - name: Install required software
+      apt:
+        name: "{{ item.a }}"
+        state: "{{ item.b }}"
+        update_cache: "{{ item.c }}"
+      loop:
+        - {a: openjdk-17-jdk, b: present, c: yes}
+        - {a: git, b: present, c: no}
+        - {a: maven, b: present, c: no}
+
+    - name: Download Jenkins WAR file
+      get_url:
+        url: https://get.jenkins.io/war-stable/2.504.2/jenkins.war
+        dest: /home/ubuntu
+
+- name: Configure Tomcat on QA and PROD servers
+  hosts: servers
+  become: true
+  tasks:
+    - name: Install Tomcat10 and Tomcat10-admin
+      apt:
+        name: "{{ item.a }}"
+        state: "{{ item.b }}"
+        update_cache: "{{ item.c }}"
+      loop:
+        - {a: tomcat10, b: present, c: yes}
+        - {a: tomcat10-admin, b: present, c: no}
+
+    - name: Copy customised tomcat-user.xml file
+      copy:
+        src: tomcat-user.xml
+        dest: /etc/tomcat10/
+      notify: Restart tomcat
+
+  handlers:
+    - name: Restart tomcat
+      service:
+        name: tomcat10
+        state: restarted
+
