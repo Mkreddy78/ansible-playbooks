@@ -1,0 +1,18 @@
+---
+- name: Check if f1 file present; if not, create a directory named f1
+  hosts: all
+  become: yes
+  tasks:
+    - name: Check for /tmp/f1 file or directory
+      stat:
+        path: /tmp/f1
+      register: f1_stat
+
+    - name: Display output of the stat module
+      debug:
+        var: f1_stat
+    - name: Creat f1 folder if f1 file is not present
+      file:
+        name: /tmp/f1
+        state: directory
+      when: f1_stat.stat.exists == false

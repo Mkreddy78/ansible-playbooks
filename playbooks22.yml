@@ -1,0 +1,22 @@
+---
+- name: Install git on all servers
+  hosts: all
+  become: yes
+  tasks:
+    - name: Attempt to install git using apt, fallback to yum on failure
+      block:
+        - name: Install git on Ubuntu servers using apt
+          apt:
+            name: git
+            state: present
+            update_cache: yes
+
+      rescue:
+        - name: Install git on RedHat servers using yum
+          yum:
+            name: git
+            state: present
+      always:
+        - name: Display sucess msg
+          debug:
+            msg: "Git installation done on all servers"
